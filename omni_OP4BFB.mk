@@ -27,3 +27,6 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
 # Dimen
 TARGET_SCREEN_HEIGHT := 1520
 TARGET_SCREEN_WIDTH := 720
+
+# Copy fstab
+#PRODUCT_COPY_FILES += device/oppo/OP4BFB/recovery.fstab:recovery/root/recovery.fstab
