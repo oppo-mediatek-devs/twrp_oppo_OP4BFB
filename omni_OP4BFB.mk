@@ -6,8 +6,7 @@
 #
 
 # Inherit from those products. Most specific first.
-$(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit.mk)
-$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base_telephony.mk)
+$(call inherit-product, build/target/product/embedded.mk)
 
 # Inherit from our custom product configuration
 $(call inherit-product, vendor/omni/config/common.mk)
@@ -22,7 +21,7 @@ PRODUCT_RELEASE_NAME := OPPO A12
 
 PRODUCT_BUILD_PROP_OVERRIDES += \
     PRODUCT_NAME=OP4BFB \
-    BUILD_PRODUCT=OP4BFB \
+    BUILD_PRODUCT=CPH2083 \
     TARGET_DEVICE=OP4BFB
 
 # Dimen

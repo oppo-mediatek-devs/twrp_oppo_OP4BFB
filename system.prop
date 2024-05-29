@@ -5,10 +5,10 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-ro.product.brand=realme
-ro.product.name=RMX1941
-ro.product.device=RMX1941
-ro.build.product=RMX1941
+ro.product.brand=OPPO
+ro.product.name=OP4BFB
+ro.product.device=OP4BFB
+ro.build.product=CPH2083
 ro.treble.enabled=true
 ro.boot.avb_version=1.0
 ro.boot.vbmeta.avb_version=1.0
