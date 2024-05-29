@@ -1,20 +1,21 @@
+import /init.tee.rc
+
 on fs
-    # Somehow AOSP build system hasn't provided a symlink here
     symlink /system_root/system /system
-    # Create a more standard /dev/block layout for our scripts
     symlink /dev/block/platform/bootdevice/by-name /dev/block/by-name
-    setprop sys.usb.ffs.aio_compat 1
-    write /sys/class/power_supply/usb/otg_switch 1
     export ANDROID_ROOT /system_root
+
+on init
+    mkdir /mnt/vendor/persist
+    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw
 
 on init
 
     mkdir /vendor/lib64 0700 root root
     mkdir /vendor/lib64/hw 0700 root root
     symlink /vendor/manifest.xml /system_root/system/manifest.xml
-    symlink /sbin/keystore.mt6765.so /vendor/lib64/hw/keystore.mt6765.so
-    symlink /sbin/mcRegistry /vendor/app/mcRegistry
-    symlink /sbin/gatekeeper.mt6765.so /vendor/lib64/hw/gatekeeper.mt6765.so
+    symlink /vendor/lib64/hw/keystore.mt6765.so /vendor/lib64/hw/keystore.oppo6765_19451.so
+    symlink /vendor/lib64/hw/gatekeeper.mt6765.so /vendor/lib64/hw/gatekeeper.oppo6765_19451.so
 
     start hwservicemanager
     start servicemanager
@@ -39,6 +40,13 @@ service servicemanager /sbin/servicemanager
     disabled
     seclabel u:r:recovery:s0
 
+#Add for OPPO FBE
+service hal_cryptoeng_oppo /sbin/vendor.oppo.hardware.cryptoeng@1.0-service
+    user root
+    group root drmrpc sdcard_rw sdcard_r
+    disabled
+    seclabel u:r:recovery:s0
+
 service gatekeeper-1-0 /sbin/android.hardware.gatekeeper@1.0-service
     user root
     group root
@@ -51,19 +59,31 @@ service keymaster-3-0 /sbin/android.hardware.keymaster@3.0-service
     disabled
     seclabel u:r:recovery:s0
 
-on property:crypto.ready=0
+on property:hwservicemanager.ready=true
+    start hal_cryptoeng_oppo
+    start keymaster-3-0
+    start gatekeeper-1-0
+
+on property:ro.crypto.state=unsupported
+    stop mobicore
+    stop hal_cryptoeng_oppo
     stop keymaster-3-0
     stop gatekeeper-1-0
     stop servicemanager
+    stop hwservicemanager
 
-on property:vendor.sys.listeners.registered=true
-    start keymaster-3-0
-    start gatekeeper-1-0
-    start servicemanager
-    
-on post-fs
-    # Support A/B feature for emmc boot region
-    symlink /dev/block/sda /dev/block/mmcblk0boot0
-    symlink /dev/block/sdb /dev/block/mmcblk0boot1
-    symlink /dev/block/mmcblk0boot0 /dev/block/platform/bootdevice/by-name/preloader_a
-    symlink /dev/block/mmcblk0boot1 /dev/block/platform/bootdevice/by-name/preloader_b
+on property:ro.crypto.state=unencrypted
+    stop mobicore
+    stop hal_cryptoeng_oppo
+    stop keymaster-3-0
+    stop gatekeeper-1-0
+    stop servicemanager
+    stop hwservicemanager
+
+on property:twrp.decrypt.done=true && property:twrp.all.users.decrypted=true
+    stop mobicore
+    stop hal_cryptoeng_oppo
+    stop keymaster-3-0
+    stop gatekeeper-1-0
+    stop servicemanager
+    stop hwservicemanager
