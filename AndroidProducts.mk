@@ -6,4 +6,7 @@
 #
 
 PRODUCT_MAKEFILES := \
-	$(LOCAL_DIR)/omni_OP4BFB.mk
+	$(LOCAL_DIR)/twrp_OP4BFB.mk
+
+COMMON_LUNCH_CHOICES := \
+        twrp_OP4BFB-eng

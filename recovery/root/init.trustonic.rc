@@ -1,5 +1,5 @@
 # Start Daemon (Registry directories should already be present)
-service mobicore /sbin/mcDriverDaemon --P1 /mnt/vendor/persist/mcRegistry \
+service mobicore /system/bin/mcDriverDaemon --P1 /mnt/vendor/persist/mcRegistry \
 	-r /vendor/app/mcRegistry/020f0000000000000000000000000000.drbin \
 	-r /vendor/app/mcRegistry/05120000000000000000000000000000.drbin \
 	-r /vendor/app/mcRegistry/070b0000000000000000000000000000.drbin \
@@ -49,13 +49,13 @@ on property:ro.crypto.state=unencrypted
     write /proc/bootprof "MOBICORE: create /data/vendor/mcRegistry -- (unencrypted)"
 
 # Normal mode, FBE
-on property:ro.crypto.type=file && property:ro.crypto.state=encrypted
+on property:ro.crypto.type=file
     write /proc/bootprof "MOBICORE: create /data/vendor/mcRegistry ++ (FBE encrypted)"
     mkdir /data/vendor/mcRegistry 0775 system system
     write /proc/bootprof "MOBICORE: create /data/vendor/mcRegistry -- (FBE encrypted)"
 
 # Normal mode, FDE
-on property:vold.decrypt=trigger_restart_framework
+on property:ro.crypto.type=block
     write /proc/bootprof "MOBICORE: create /data/vendor/mcRegistry ++ (FDE encrypted)"
     mkdir /data/vendor/mcRegistry 0775 system system
     write /proc/bootprof "MOBICORE: create /data/vendor/mcRegistry -- (FDE encrypted)"

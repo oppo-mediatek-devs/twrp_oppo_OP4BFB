@@ -1,59 +1,50 @@
-import /init.tee.rc
-
-on fs
-    symlink /system_root/system /system
-    symlink /dev/block/platform/bootdevice/by-name /dev/block/by-name
-    export ANDROID_ROOT /system_root
+import /init.trustonic.rc
 
 on init
     mkdir /mnt/vendor/persist
     mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw
+	start erase_para
 
-on init
-
-    mkdir /vendor/lib64 0700 root root
-    mkdir /vendor/lib64/hw 0700 root root
-    symlink /vendor/manifest.xml /system_root/system/manifest.xml
-    symlink /vendor/lib64/hw/keystore.mt6765.so /vendor/lib64/hw/keystore.oppo6765_19451.so
-    symlink /vendor/lib64/hw/gatekeeper.mt6765.so /vendor/lib64/hw/gatekeeper.oppo6765_19451.so
-
-    start hwservicemanager
-    start servicemanager
+on fs
+    install_keyring
+    export LD_LIBRARY_PATH /system/lib64:/vendor/lib64:/vendor/lib64/hw
     setprop crypto.ready 1
+    write /sys/class/power_supply/usb/otg_switch 1
 
-service logd /sbin/logd
+service erase_para /system/bin/dd if=/dev/zero of=/dev/block/bootdevice/by-name/para
     user root
     group root
     disabled
     seclabel u:r:recovery:s0
+    oneshot
 
-service hwservicemanager /sbin/hwservicemanager
-    user root
+service keystore_auth /system/bin/keystore_auth
+    oneshot
+    user system
     group root
     disabled
-    onrestart setprop hwservicemanager.ready false
     seclabel u:r:recovery:s0
 
-service servicemanager /sbin/servicemanager
+service keystore /system/bin/keystore /tmp/misc/keystore
     user root
-    group root readproc
+    group root drmrpc readproc
     disabled
     seclabel u:r:recovery:s0
 
 #Add for OPPO FBE
-service hal_cryptoeng_oppo /sbin/vendor.oppo.hardware.cryptoeng@1.0-service
+service hal_cryptoeng_oppo /system/bin/vendor.oppo.hardware.cryptoeng@1.0-service
     user root
     group root drmrpc sdcard_rw sdcard_r
     disabled
     seclabel u:r:recovery:s0
 
-service gatekeeper-1-0 /sbin/android.hardware.gatekeeper@1.0-service
+service keymaster-3-0 /system/bin/android.hardware.keymaster@3.0-service
     user root
-    group root
+    group root drmrpc
     disabled
     seclabel u:r:recovery:s0
 
-service keymaster-3-0 /sbin/android.hardware.keymaster@3.0-service
+service gatekeeper-1-0 /system/bin/android.hardware.gatekeeper@1.0-service
     user root
     group root
     disabled
@@ -61,6 +52,7 @@ service keymaster-3-0 /sbin/android.hardware.keymaster@3.0-service
 
 on property:hwservicemanager.ready=true
     start hal_cryptoeng_oppo
+	start mobicore
     start keymaster-3-0
     start gatekeeper-1-0
 
