@@ -25,6 +25,9 @@ PRODUCT_BUILD_PROP_OVERRIDES += \
     BUILD_PRODUCT=CPH2083 \
     TARGET_DEVICE=OP4BFB
 
+# API level
+PRODUCT_SHIPPING_API_LEVEL := 28
+
 # HACK: Set vendor patch level
 PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.build.security_patch=2099-12-31
